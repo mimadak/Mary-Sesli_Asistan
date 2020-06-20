@@ -1,5 +1,5 @@
 # Mary - Sesli Asistan
-Mary - Sesli Asistan, bilgisayar kullanımını kolaylaştıran ve zevkli hale getiren açık kaynaklı türkçe sesli asistan.
+Mary - Sesli Asistan, bilgisayar kullanımını kolaylaştıran ve zevkli hale getiren açık kaynak kodlu türkçe sesli asistan.
 </br>
 <h3>Versiyon 1.0.00</h3>
 </br>
