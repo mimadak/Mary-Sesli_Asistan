@@ -22,6 +22,8 @@ Mary - Sesli Asistan, bilgisayar kullanımını kolaylaştıran ve zevkli hale g
 https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
 </br>
 
+<h3>pyResponsiveVoice kütüphanesi için makaleme göz atabilirsiniz; </h3>
+https://www.mertmekatronik.com/python-responsivevoice-kutuphanesi
 </br>
 
 ![alt text](https://i.hizliresim.com/DU4OAs.png)
