@@ -392,7 +392,7 @@ class komutlar():
             durum = soup.find("span", attrs={"class": "vk_gy vk_sh"}).text
             if durum == "Bazı bölgelerde sağanak yağış":
                 durum = "Yer yer sağnak yağışlı"
-            self.labelText = "<font size=1>{}</font><br/><font size=1>{}</font><br/><font size=1>{}</font><br/><font size=5>{}°C</font>".format(tumsehir, gun, durum, derece)
+            self.labelText = "<font size=2>{}</font><br/><font size=2>{}</font><br/><font size=1>{}</font><br/><font size=5>{}°C</font>".format(tumsehir, gun, durum, derece)
 
             if "HAVA DURUMU" == self.buyukHarf or "HAVA NASIL" == self.buyukHarf or "HAVA KAÇ DERECE" == self.buyukHarf:
                 self.seslendirilecek(sehir + " için şuan hava " + derece + " derece " + durum)
@@ -472,7 +472,7 @@ class komutlar():
         random = choice(random)
         self.seslendirilecek(random)
 
-    def googleFoto(self,soup):##Bu fonksiyon 
+    def googleFoto(self,soup):##Bu fonksiyon
         if self.solbilgi:
             try:
                 self.height = int(soup.find("div", attrs={"class": "eoNQle mod NFQFxe RsqAUb"}).find("img").get("height"))

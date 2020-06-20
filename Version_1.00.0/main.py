@@ -261,7 +261,7 @@ class Ui(QtWidgets.QMainWindow):
                 self.Image_Label.setMinimumSize(630, 270)
                 self.Image_Label.setMinimumSize(630, 270)
                 self.Yanit_Layout.setSpacing(0)
-                self.setYanitLabel(komut.labelText,foto=True)
+                self.Yanit_Label.setText("")
                 self.yapilanislem = ""
             elif komut.yapilanislem == "websiteSonuc":
                 self.Image_Label.hide()
