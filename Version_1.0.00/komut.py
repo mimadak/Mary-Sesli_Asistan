@@ -472,7 +472,7 @@ class komutlar():
         random = choice(random)
         self.seslendirilecek(random)
 
-    def googleFoto(self,soup):##Bu fonksiyon
+    def googleFoto(self,soup):
         if self.solbilgi:
             try:
                 self.height = int(soup.find("div", attrs={"class": "eoNQle mod NFQFxe RsqAUb"}).find("img").get("height"))
