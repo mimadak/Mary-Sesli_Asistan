@@ -25,6 +25,7 @@ https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
 <h3>pyResponsiveVoice kütüphanesi için makaleme göz atabilirsiniz; </h3>
 https://www.mertmekatronik.com/python-responsivevoice-kutuphanesi
 </br>
+</br>
 
 ![alt text](https://i.hizliresim.com/DU4OAs.png)
 ![alt text](https://i.hizliresim.com/KgUN39.png)
