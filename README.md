@@ -1,8 +1,10 @@
 # Mary - Sesli Asistan
-Mary - Sesli Asistan, bilgisayar kullanımını kolaylaştıran ve zevkli hale getiren açık kaynaklı türkçe sesli asistan.
+Mary - Sesli Asistan, bilgisayar kullanımını kolaylaştıran ve zevkli hale getiren açık kaynak kodlu türkçe sesli asistan.
 </br>
 <h3>Versiyon 1.0.00</h3>
 </br>
+
+![alt text](https://i.hizliresim.com/XrnpjR.png)
 
 Özellikleri;
 <ul>
@@ -22,6 +24,9 @@ Mary - Sesli Asistan, bilgisayar kullanımını kolaylaştıran ve zevkli hale g
 https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
 </br>
 
+<h3>pyResponsiveVoice kütüphanesi için makaleme göz atabilirsiniz; </h3>
+https://www.mertmekatronik.com/python-responsivevoice-kutuphanesi
+</br>
 </br>
 
 ![alt text](https://i.hizliresim.com/DU4OAs.png)
