@@ -11,7 +11,7 @@ Güncelleme notları;
   <li>Exe dosyası optimize edildi</li>
   <li>Komut dosyasına ufak eklemeler yapıldı</li>
 </ul>
-</br>
+
 ![alt text](https://i.hizliresim.com/XrnpjR.png)
 
 Özellikleri;
