@@ -179,7 +179,7 @@ class Ui(QtWidgets.QMainWindow):
                     pozisyon -= 5
                     self.Yanit_Layout.setContentsMargins(0,0,0, pozisyon)
                     time.sleep(0.01)
-            sys.exit()
+
         if foto:
             self.Yanit_Label.setWordWrap(True)
             self.Yanit_Label.setAlignment(QtCore.Qt.AlignLeft)
