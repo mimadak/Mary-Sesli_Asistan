@@ -7,8 +7,6 @@ Mary - Sesli Asistan, bilgisayar kullanımını kolaylaştıran ve zevkli hale g
 Güncelleme notları;
 <ul>
   <li>Çökmeler düzeltildi</li>
-  <li>Exe dosyası çalıştırılabilir hale getirildi</li>
-  <li>Exe dosyası optimize edildi</li>
 </ul>
 
 ![alt text](https://i.hizliresim.com/XrnpjR.png)
