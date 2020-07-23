@@ -10,12 +10,13 @@ import base64
 import io
 from PIL import Image
 
+
 class Veritabani():
     def adDegistir(self,isim):
         self.db = sqlite3.connect('database.sqlite')
         self.imlec = self.db.cursor()
         self.imlec.execute(f"UPDATE kullanici SET isim='{isim}'")
-        self.db.commit()
+        self.db.commit() 
         self.db.close()
 
     def ad(self):
@@ -236,9 +237,9 @@ class komutlar():
                     self.googleAra()
 
         if self.cevapVerildi == False:
-            if "FINDEKS" in self.buyukHarf:
-                if "WIKIPEDIA" not in self.buyukHarf and "NEDIR" not in self.buyukHarf and "KIMDIR" not in self.buyukHarf:
-                    self.websiteAc()
+            if "NEDIR" in self.buyukHarf or "KIMDIR" in self.buyukHarf:
+                self.googleAra()
+
 
     def islemBul(self,islem):
         self.yapilanislem = islem
@@ -248,10 +249,6 @@ class komutlar():
 
         if self.cevapVerildi == False:
             self.cokKullanılanlar()
-
-        if self.cevapVerildi == False:
-            if "NEDIR" in self.buyukHarf or "KIMDIR" in self.buyukHarf:
-                self.googleAra()
 
         if self.cevapVerildi == False:
             self.sohbet(self.buyukHarf)
@@ -316,7 +313,7 @@ class komutlar():
 
 
     def programAc(self):
-        index = False
+        index = None
         lnkfile_path = []
         lnkfile_name = []
         for dirpath, subdirs, files in os.walk("C:\ProgramData\Microsoft\Windows\Start Menu\Programs"):
@@ -523,6 +520,7 @@ class komutlar():
                 except AttributeError:
                     self.foto = False
                     index = None
+
         if index is not None:
             try:
                 resimKod = str(kodlar[index])
@@ -564,6 +562,7 @@ class komutlar():
             r = requests.get(wikilink, headers=headersparam)
             soup = BeautifulSoup(r.content, "lxml",from_encoding='UTF-8')
             try:############Para birimi
+                print(1)
                 div = soup.find("div", attrs={"class": "b1hJbf"})
                 paraBirimi = div.find("span", attrs={"class": "vLqKYe"}).text
                 paraMiktari = div.find("span", attrs={"class": "DFlfde eNFL1"}).text
@@ -572,6 +571,7 @@ class komutlar():
                 self.seslendirilecek(paraMiktari+" "+paraBirimi+" "+cevrilenMiktar+" "+cevrilenBirim+" ediyor")
             except AttributeError:
                 try:##Dil Çeviri
+                    print(2)
                     div = soup.find("div", attrs={"id": "KnM9nf"})
                     cevirilecekCumle = div.find("span").text
                     div = soup.find("div", attrs={"id": "kAz1tf"})
@@ -584,6 +584,7 @@ class komutlar():
                     print("Dil çeviri")
                 except AttributeError:
                     try:##Öldüğü zamanki yaşı
+                        print(3)
                         ad = soup.find("span", attrs={"class": "GzssTd"}).find("span").text
                         cevap = soup.find("div", attrs={"data-attrid": "kc:/people/deceased_person:age_at_death"}).find("div", attrs={
                             "class": "Z0LcW XcVN5d"}).text
@@ -594,11 +595,13 @@ class komutlar():
                         print("Öldüğü zamanki yaşı")
                     except AttributeError:
                         try:##Hesap makinesi
+                            print(4)
                             islem = soup.find("span", attrs={"class": "vUGUtc"}).text
                             sonuc = soup.find("span", attrs={"class": "qv3Wpe"}).text
                             self.seslendirilecek(islem+sonuc)
                         except AttributeError:
                             try:##Ölüm tarihi
+                                print(5)
                                 cevap = soup.find("div",attrs={"data-attrid": "kc:/people/deceased_person:date of death"}).find(
                                     "span", attrs={"class": "LrzXr kno-fv"}).text
                                 self.solbilgi = True
@@ -607,6 +610,7 @@ class komutlar():
                                 print("Ölüm tarihi")
                             except AttributeError:
                                 try:##Yaşı
+                                    print(6)
                                     ad = soup.find("span",attrs={"class": "GzssTd"}).find("span").text
                                     cevap = soup.find("div",attrs={"data-attrid": "kc:/people/person:age"}).find("div",attrs={"class": "Z0LcW XcVN5d"}).text
                                     self.solbilgi = False
@@ -616,12 +620,14 @@ class komutlar():
                                     print("Yaşı")
                                 except AttributeError:
                                     try:##Saat
+                                        print(7)
                                         div = soup.find("div", attrs={"class": "vk_c vk_gy vk_sh card-section sL6Rbf"})
                                         saat = div.find("div", attrs={"class": "gsrt vk_bk dDoNo XcVN5d"}).text
                                         konum = div.find("span",attrs={"class": "vk_gy vk_sh"}).text
                                         self.seslendirilecek(konum+saat)
                                     except AttributeError:
                                         try:#Besin değeri
+                                            print(7)
                                             isim = soup.find("option", attrs={"selected": "selected"}).text
                                             miktar = soup.find("div", attrs={"class": "Cc3NMb an-sbl"}).text
                                             besinDegeri = soup.find("div", attrs={"class": "Z0LcW XcVN5d an_fna"}).text
@@ -635,53 +641,60 @@ class komutlar():
                                             self.seslendirilecek(isim + " " + miktar + " da " + besinDegeri + " " + besinIsmi + "içeriyor")
                                         except AttributeError:
                                             try:##Ölüm nedeni
+                                                print(8)
                                                 cevap = soup.find("div", attrs={"data-attrid": "kc:/people/deceased_person:cause of death"}).find("div",attrs={"class": "Z0LcW XcVN5d"}).text
                                                 self.solbilgi = False
                                                 self.solbilgi2 = False
                                                 self.googleFoto(soup)
                                                 self.seslendirilecek(cevap)
                                             except AttributeError:
-                                                try:##Sağ wiki bölümü
-                                                    metin = soup.find("div", attrs={"class": "kno-rdesc"})
-                                                    metin = metin.find("span").text
-                                                    if metin == "İngilizceden çevrilmiştir-":
-                                                        metin = soup.find("div", attrs={"class": "kno-rdesc"}).select(
-                                                            "span:nth-of-type(2)")
-                                                        metin = metin[0].text
-                                                        print(metin)
-                                                        self.labelText = metin
-                                                        self.seslendirilecek(metin+". İngilizce wikipedia kaynağından çevirilmiştir")
-                                                    else:
-                                                        self.labelText = metin
-                                                        self.seslendirilecek(metin + ". Kaynak wikipedia")
-                                                    self.solbilgi = False
-                                                    self.solbilgi2 = False
-                                                    self.googleFoto(soup)
-                                                    print("Sağ wiki bölümü")
+                                                try:#Website metin2
+                                                    text = soup.find("div", attrs={"class": "hgKElc"}).text
+                                                    self.seslendirilecek(text)
                                                 except AttributeError:
-                                                    try:##Youtube videosu
-                                                        div = soup.find("div", attrs={"class": "FGpTBd"})
-                                                        link = div.find("a").get("href")
-                                                        text = soup.find("h3", attrs={"class": "LC20lb MMgsKf"}).text
-                                                        webbrowser.open_new_tab(link)
-                                                        if " - YouTube" in text:
-                                                            text = text.replace(" - YouTube","")
-                                                        self.seslendirilecek(text+" adlı videoyu Youtube'da açtım")
-                                                    except AttributeError:
-                                                        try: #Website metin
-                                                            metin = soup.find("span", attrs={"class": "e24Kjd"}).text
-                                                            kaynak = soup.find("cite", attrs={"class": "iUh30 bc tjvcx"}).text
-                                                            if "www." in kaynak: kaynak = kaynak.replace("www.","")
-                                                            if " ›" in kaynak: kaynak = kaynak.split(" ›")[0]
+                                                    try:##Sağ wiki bölümü
+                                                        print(9)
+                                                        metin = soup.find("div", attrs={"class": "kno-rdesc"})
+                                                        metin = metin.find("span").text
+                                                        if metin == "İngilizceden çevrilmiştir-":
+                                                            metin = soup.find("div", attrs={"class": "kno-rdesc"}).select(
+                                                                "span:nth-of-type(2)")
+                                                            metin = metin[0].text
+                                                            print(metin)
                                                             self.labelText = metin
-                                                            self.solbilgi = False
-                                                            self.solbilgi2 = False
-                                                            self.googleFoto(soup)
+                                                            self.seslendirilecek(metin+". İngilizce wikipedia kaynağından çevirilmiştir")
+                                                        else:
                                                             self.labelText = metin
-                                                            print(kaynak)
-                                                            self.seslendirilecek(kaynak + " kaynağına göre." +metin.split(".")[0])
+                                                            self.seslendirilecek(metin + ". Kaynak wikipedia")
+                                                        self.solbilgi = False
+                                                        self.solbilgi2 = False
+                                                        self.googleFoto(soup)
+                                                        print("Sağ wiki bölümü")
+                                                    except:
+                                                        try:##Youtube videosu
+                                                            print(10)
+                                                            div = soup.find("div", attrs={"class": "FGpTBd"})
+                                                            link = div.find("a").get("href")
+                                                            text = soup.find("h3", attrs={"class": "LC20lb MMgsKf"}).text
+                                                            webbrowser.open_new_tab(link)
+                                                            if " - YouTube" in text:
+                                                                text = text.replace(" - YouTube","")
+                                                            self.seslendirilecek(text+" adlı videoyu Youtube'da açtım")
                                                         except AttributeError:
-                                                            try: ##Website Sonuç
+                                                            try: #Website metin
+                                                                print(11)
+                                                                metin = soup.find("span", attrs={"class": "e24Kjd"}).text
+                                                                kaynak = soup.find("cite", attrs={"class": "iUh30 bc tjvcx"}).text
+                                                                if "www." in kaynak: kaynak = kaynak.replace("www.","")
+                                                                if " ›" in kaynak: kaynak = kaynak.split(" ›")[0]
+                                                                self.solbilgi = False
+                                                                self.solbilgi2 = False
+                                                                self.googleFoto(soup)
+                                                                print(kaynak)
+                                                                self.labelText = metin
+                                                                self.seslendirilecek(kaynak + " kaynağına göre." +metin.split(".")[0])
+                                                            except AttributeError:
+                                                                print(12)
                                                                 g = soup.find_all("div", attrs={"class": "g"})
                                                                 self.link1 = g[0].find("a").get("href")
                                                                 self.link2 = g[1].find("a").get("href")
@@ -700,8 +713,7 @@ class komutlar():
                                                                 self.labelText = ""
                                                                 self.seslendirilecek(random)
                                                                 self.yapilanislem = "websiteSonuc"
-                                                            except AttributeError as a:
-                                                                self.seslendirilecek("Ne demek istediğini anlayamadım")
+
 
     def youtubeAc(self):
         for i in self.youtubeTemizle:

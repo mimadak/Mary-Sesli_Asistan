@@ -1,47 +1,37 @@
 import speech_recognition as sr
 from komut import komutlar, Veritabani
-from PyQt5 import QtWidgets, uic, QtGui, QtCore
+from PyQt5 import QtWidgets, uic, QtGui, QtCore, QtMultimedia
 import sys
 from responsive_voice import ResponsiveVoice
 import threading
 import time
 from os import remove,environ,getcwd
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
-from pygame import mixer
 import webbrowser
 import sounddevice as sd
 from numpy.linalg import norm
+import playsound
+from multiprocessing import Process
 
 r = sr.Recognizer()
+
 with sr.Microphone() as source:
     r.adjust_for_ambient_noise(source)
+r.energy_threshold += 300
 
-engine = ResponsiveVoice(lang=ResponsiveVoice.TURKISH, gender=ResponsiveVoice.FEMALE, pitch=0.52, rate=0.52,key="8FCWWns8",vol=0.97)
-
-
-class ses_cal():
-    def __init__(self,file_path):
-        print(file_path)
-        file = open(file_path)
-        mixer.init(22050, -16, 1, 1024)
-        mixer.music.load(file)
-        mixer.music.play()
-        while mixer.music.get_busy():
-            time.sleep(0.03)
-            if window.ttsIptal:
-                break
-        mixer.stop()
-        mixer.quit()
-        file.close()
-        remove(file_path)
 
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
         uic.loadUi('iwsss.ui', self)
+        self.starting()
+        self.show()
+
+
+    def starting(self):
         self.version = self.findChild(QtWidgets.QLabel, 'version')
-        self.version.setText("Mary 1.0.01")
+        self.version.setText("Mary 1.0.02")
         self.micButton = self.findChild(QtWidgets.QPushButton, 'micButton')
         self.Kelime_Label = self.findChild(QtWidgets.QLabel,'Kelime_Label')
         self.Yanit_Label = self.findChild(QtWidgets.QLabel,'Yanit_Label')
@@ -60,12 +50,12 @@ class Ui(QtWidgets.QMainWindow):
         self.siteaciklama1 = self.findChild(QtWidgets.QLabel, 'siteaciklama1')
         self.siteaciklama2 = self.findChild(QtWidgets.QLabel, 'siteaciklama2')
         self.siteaciklama3 = self.findChild(QtWidgets.QLabel, 'siteaciklama3')
-        self.web_sonuc1.setSpacing(0)
-        self.web_sonuc2.setSpacing(0)
-        self.web_sonuc3.setSpacing(0)
         self.web_sonuc1 = self.findChild(QtWidgets.QLayout, 'web_sonuc1')
         self.web_sonuc2 = self.findChild(QtWidgets.QLayout, 'web_sonuc2')
         self.web_sonuc3 = self.findChild(QtWidgets.QLayout, 'web_sonuc3')
+        self.web_sonuc1.setSpacing(0)
+        self.web_sonuc2.setSpacing(0)
+        self.web_sonuc3.setSpacing(0)
         self.web_sonuc1.setContentsMargins(0 ,0 ,0 ,0)
         self.web_sonuc2.setContentsMargins(0, 0, 0, 0)
         self.web_sonuc3.setContentsMargins(0, 0, 0, 0)
@@ -76,7 +66,24 @@ class Ui(QtWidgets.QMainWindow):
         self.listenAktif = False
         self.micButtonClickable = True
         self.Image_Label.show()
+        self.aktifThreadler = 0
         self.dosyakonumu = getcwd()
+        self.soundPlayer = QtMultimedia.QMediaPlayer()
+        
+        #Tray icon
+        self.tray_icon = QtWidgets.QSystemTrayIcon(self)
+        self.tray_icon.setIcon(QtGui.QIcon("image/mary.png"))
+        self.tray_icon.activated.connect(self.trayDoubleClick)
+        show_action = QtWidgets.QAction("Göster", self)
+        quit_action = QtWidgets.QAction("Çıkış yap", self)
+        show_action.triggered.connect(self.show)
+        quit_action.triggered.connect(QtWidgets.qApp.quit)
+        tray_menu = QtWidgets.QMenu()
+        tray_menu.addAction(show_action)
+        tray_menu.addAction(quit_action)
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.show()
+
         for i in range(10):
             self.dosyakonumu = self.dosyakonumu.replace("\\","/")
         i = "border-image: url('{}/image/background.png');".format(self.dosyakonumu)
@@ -84,32 +91,69 @@ class Ui(QtWidgets.QMainWindow):
         self.setStyleSheet(stylesheet)
         self.micButton.setStyleSheet("border-image: url('{}/image/mic_1.png');".format(self.dosyakonumu))
         self.yapilanislem = ""
-
+        self.backgroundListen = True
+        self.voiceEngine = ResponsiveVoice(lang=ResponsiveVoice.TURKISH, gender=ResponsiveVoice.FEMALE, pitch=0.52, rate=0.53,key="8FCWWns8",vol=0.97)
+        threading.Thread(target=self.sesanimasyon,daemon=True).start()
+        r.listen_in_background(sr.Microphone(), self.background)
         self.db = Veritabani()
         if self.db.ad() == "":
             self.yapilanislem = "ilkacilis"
-            konus = threading.Thread(target=self.ilkCalistirma)
-            konus.start()
-        self.show()
+            threading.Thread(target=self.ilkCalistirma,daemon=True).start()
 
+    def closeEvent(self, event):
+            event.ignore()
+            self.hide()
+            self.tray_icon.showMessage(
+                "Mary - Sesli asistan",
+                "Sesli asistan simge durumuna küçültüldü",
+                QtWidgets.QSystemTrayIcon.Information,
+                2000
+            )
+    
+    def trayDoubleClick(self, reason):
+            if reason == QtWidgets.QSystemTrayIcon.DoubleClick:
+                self.show()
+
+    def background(self,recognizer, audio):
+        try:
+            if self.backgroundListen:
+                text = r.recognize_google(audio, language='tr-tr')
+                liste = ["Merih","Melih","Meri","Mery","MARIO","Mary"]
+                for i in liste:
+                    if i in text:
+                        text = i.replace(i,"Mary")
+
+                if "MARY" in text.upper():
+                    notification = "{}\\notification.mp3".format(self.dosyakonumu)
+                    print(notification)
+                    url = QtCore.QUrl.fromLocalFile(notification)
+                    self.soundPlayer.setMedia(QtMultimedia.QMediaContent(url))
+                    self.soundPlayer.play()
+                    window.listenAktif = True
+                    window.ttsIptal = True
+                    window.animasyon = True
+                    window.backgroundListen = False
+                    window.Tip_Label.setText("Dinleniyor")
+                    window.micButton.setStyleSheet("border-image: url('{}/image/mic_2.png');".format(self.dosyakonumu))
+                    self.Tip_Label.setStyleSheet("background-color:#ff0000;color: rgb(255, 255, 255);")
+                    dinle = threading.Thread(target=self.dinle, daemon=True)
+                    self.show()
+                    dinle.start()
+                    self.backgroundListen = False
+                else:
+                    pass
+        except sr.UnknownValueError:
+            print("Arkaplan sesi anlaşılmadı")
 
     def ilkCalistirma(self):
-        mixer.init(22050, -16, 1, 1024)
         self.micButton.setMaximumSize(0, 0)
         self.micButton.setMinimumSize(0, 0)
+        self.backgroundListen = False
         self.Tip_Label.setText("")
-        file_path = engine.get_mp3("Hoşgeldin, Adım Mary.\nBen senin sesli asistanınım.")
-        threading.Thread(target=self.setYanitLabel, args={"Hoşgeldin, Adım Mary. Ben senin sesli asistanınım."}).start()
-        mixer.music.load(file_path)
-        mixer.music.play()
-        while mixer.music.get_busy():
-            time.sleep(0.1)
-        file_path = engine.get_mp3("Öncelikle adını öğrenebilir miyim? Adını söylemek için lütfen butona tıkla")
-        threading.Thread(target=self.setYanitLabel,args={"Öncelikle adını öğrenebilir miyim?\nAdını söylemek için lütfen butona tıkla"}).start()
-        mixer.music.load(file_path)
-        mixer.music.play()
-        while mixer.music.get_busy():
-            time.sleep(0.1)
+        threading.Thread(target=self.setYanitLabel, args={"Hoşgeldin, Adım Mary. Ben senin sesli asistanınım."},daemon=True).start()
+        self.voiceEngine.say("Hoşgeldin, Adım Mary.\nBen senin sesli asistanınım.")
+        threading.Thread(target=self.setYanitLabel,args={"Öncelikle adını öğrenebilir miyim?\nAdını söylemek için lütfen butona tıkla"},daemon=True).start()
+        self.voiceEngine.say("Öncelikle adını öğrenebilir miyim? Adını söylemek için lütfen butona tıkla")
         self.micButton.setMaximumSize(80, 80)
         self.micButton.setMinimumSize(80, 80)
         self.Tip_Label.setText("Konuşmak için butona tıklayın")
@@ -122,10 +166,9 @@ class Ui(QtWidgets.QMainWindow):
                 self.Image_Label.setStyleSheet("border-image: url('{}/image/neler_yapabilirsin.png');".format(self.dosyakonumu))
                 self.Image_Label.setMaximumSize(630, 270)
                 self.Image_Label.setMinimumSize(630, 270)
-                file_path = engine.get_mp3(f"Yapabileceklerimin bazıları şunlar {self.db.ad()}. Şimdi başlayabilirsin")
-                ses_cal(file_path)
-                sys.exit()
-
+                self.voiceEngine.say(f"Yapabileceklerimin bazıları şunlar {self.db.ad()}. Şimdi başlayabilirsin")
+                break
+        sys.exit()
 
     def micButtonPressed(self):
         print("micButton Basıldı")
@@ -142,44 +185,36 @@ class Ui(QtWidgets.QMainWindow):
                 time.sleep(2)
                 self.micButtonClickable = True
                 self.micButton.setEnabled(True)
-            threading.Thread(target=i).start()
+                self.backgroundListen = True
+                SystemExit
+            threading.Thread(target=i,daemon=True).start()
         else:
             if self.micButtonClickable:
                 self.listenAktif = True
                 self.ttsIptal = True
                 self.animasyon = True
+                self.backgroundListen = False
                 self.Tip_Label.setText("Dinleniyor")
                 self.micButton.setStyleSheet("border-image: url('{}/image/mic_2.png');".format(self.dosyakonumu))
                 self.Tip_Label.setStyleSheet("background-color:#ff0000;color: rgb(255, 255, 255);")
-                sesanimasyon = threading.Thread(target=self.sesanimasyon)
-                sesanimasyon.start()
-                dinle = threading.Thread(target=self.dinle)
+                dinle = threading.Thread(target=self.dinle,daemon=True)
                 dinle.start()
 
     @staticmethod
     def sesanimasyon():
         def sound(indata, outdata, frames, time, status):
+            volume_norm = norm(indata) * 250
             if window.animasyon:
-                volume_norm = norm(indata) * 250
                 window.Tip_Label.setMinimumSize(70+volume_norm, 0)
-        with sd.Stream(callback=sound):
-            sd.sleep(10000)
-        sys.exit()
-
+        while True:
+            with sd.Stream(callback=sound):
+                sd.sleep(1000000)
 
     def setYanitLabel(self,yazi,foto=False):
         self.Yanit_Label.setWordWrap(False)
         QtCore.QMetaObject.invokeMethod(self.Yanit_Label, "setText", QtCore.Qt.QueuedConnection, QtCore.Q_ARG(str,yazi))
         yaziBoyutu = QtGui.QFont()
         yaziBoyutu.setPointSize(22)
-        def animasyon():
-            pozisyon = 100
-            for i in range(20):
-                if pozisyon>0:
-                    pozisyon -= 5
-                    self.Yanit_Layout.setContentsMargins(0,0,0, pozisyon)
-                    time.sleep(0.01)
-
         if foto:
             self.Yanit_Label.setWordWrap(True)
             self.Yanit_Label.setAlignment(QtCore.Qt.AlignLeft)
@@ -226,9 +261,41 @@ class Ui(QtWidgets.QMainWindow):
             else:
                 self.Yanit_Label.setMaximumSize(600, 99999)
                 self.Yanit_Label.setWordWrap(True)
-
         self.Yanit_Label.setFont(yaziBoyutu)
-        animasyon()
+
+        pozisyon = 100
+        for i in range(20):
+            if pozisyon > 0:
+                pozisyon -= 5
+                self.Yanit_Layout.setContentsMargins(0, 0, 0, pozisyon)
+                time.sleep(0.01)
+
+    def labelClear(self):
+        self.siteaciklama1.setText("")
+        self.siteaciklama2.setText("")
+        self.siteaciklama3.setText("")
+        self.sitebaslik1.setText("")
+        self.sitebaslik2.setText("")
+        self.sitebaslik3.setText("")
+        self.sitelink1.setText("")
+        self.sitelink2.setText("")
+        self.sitelink3.setText("")
+        self.siteaciklama1.hide()
+        self.siteaciklama2.hide()
+        self.siteaciklama3.hide()
+        self.sitebaslik1.hide()
+        self.sitebaslik2.hide()
+        self.sitebaslik3.hide()
+        self.sitelink1.hide()
+        self.sitelink2.hide()
+        self.sitelink3.hide()
+        self.web_sonuc1.setSpacing(0)
+        self.web_sonuc2.setSpacing(0)
+        self.web_sonuc3.setSpacing(0)
+        self.web_sonuc1.setContentsMargins(0, 0, 0, 0)
+        self.web_sonuc2.setContentsMargins(0, 0, 0, 0)
+        self.web_sonuc3.setContentsMargins(0, 0, 0, 0)
+        self.Image_Label.setAlignment(QtCore.Qt.AlignLeft)
 
     def veriIsle(self,ses):
         text = r.recognize_google(ses, language='tr-tr')
@@ -245,32 +312,8 @@ class Ui(QtWidgets.QMainWindow):
         komut.islemBul(window.yapilanislem)
         self.yapilanislem = komut.yapilanislem
         if self.listenAktif == False:
-            self.siteaciklama1.setText("")
-            self.siteaciklama2.setText("")
-            self.siteaciklama3.setText("")
-            self.sitebaslik1.setText("")
-            self.sitebaslik2.setText("")
-            self.sitebaslik3.setText("")
-            self.sitelink1.setText("")
-            self.sitelink2.setText("")
-            self.sitelink3.setText("")
-            self.siteaciklama1.hide()
-            self.siteaciklama2.hide()
-            self.siteaciklama3.hide()
-            self.sitebaslik1.hide()
-            self.sitebaslik2.hide()
-            self.sitebaslik3.hide()
-            self.sitelink1.hide()
-            self.sitelink2.hide()
-            self.sitelink3.hide()
-            self.web_sonuc1.setSpacing(0)
-            self.web_sonuc2.setSpacing(0)
-            self.web_sonuc3.setSpacing(0)
-            self.web_sonuc1.setContentsMargins(0, 0, 0, 0)
-            self.web_sonuc2.setContentsMargins(0, 0, 0, 0)
-            self.web_sonuc3.setContentsMargins(0, 0, 0, 0)
-            self.Image_Label.setAlignment(QtCore.Qt.AlignLeft)
-            file_path = engine.get_mp3(komut.seslendirilecektext)
+            file_path = self.voiceEngine.get_mp3(komut.seslendirilecektext)
+            self.labelClear()
             if komut.yapilanislem == "neyapabilirsin":
                 self.Image_Label.show()
                 self.Image_Label.setStyleSheet("border-image: url('{}/image/neler_yapabilirsin.png');".format(self.dosyakonumu))
@@ -337,47 +380,63 @@ class Ui(QtWidgets.QMainWindow):
                 self.Image_Label.hide()
                 self.Yanit_Layout.setSpacing(6)
                 self.setYanitLabel(komut.labelText)
-            ses_cal(file_path)
-            sys.exit()
+            url = QtCore.QUrl.fromLocalFile(file_path)
+            self.soundPlayer.setMedia(QtMultimedia.QMediaContent(url))
+            self.soundPlayer.play()
+            while self.ttsIptal == False:
+                time.sleep(0.05)
+            self.backgroundListen = True
+            self.soundPlayer.stop()
+            remove(file_path)
+            SystemExit
         else:
-            sys.exit()
+            self.backgroundListen = True
+            SystemExit
 
     def dinle(self):
-        def callback(recognizer, audio):
-            try:
-                self.Tip_Label.setText("Konuşmak için butona tıklayın")
-                self.Tip_Label.setStyleSheet("color: rgb(255, 255, 255);")
-                self.micButton.setStyleSheet("border-image: url('{}/image/mic_1.png');".format(window.dosyakonumu))
-                if window.listenAktif:
-                    window.ttsIptal = False
-                    window.listenAktif = False
-                    window.animasyon = False
-                    self.veriIsle(audio)
-                sys.exit()
-            except sr.UnknownValueError:
-                print("Ne dediğini anlayamadım.")
-                self.micButton.setStyleSheet("border-image: url('{}/image/mic_1.png');".format(window.dosyakonumu))
-                self.Kelime_Label.setText("Anlaşılmadı")
+        try:
+            with sr.Microphone() as source:
+                audio = r.listen(source,timeout=3)
+            self.Tip_Label.setText("Konuşmak için butona tıklayın")
+            self.Tip_Label.setStyleSheet("color: rgb(255, 255, 255);")
+            self.micButton.setStyleSheet("border-image: url('{}/image/mic_1.png');".format(window.dosyakonumu))
+            if window.listenAktif:
+                window.ttsIptal = False
                 window.listenAktif = False
-                sys.exit()
-            except sr.RequestError:
-                print("İnternet bağlanıtısı kurulamadı.")
-                self.micButton.setStyleSheet("border-image: url('{}/image/mic_1.png');".format(window.dosyakonumu))
-                window.listenAktif = False
-                sys.exit()
-        with sr.Microphone() as source:
-            r.adjust_for_ambient_noise(source,duration=0.3)
-        r.listen_in_background(sr.Microphone(),callback)
-        for i in range(100):
-            time.sleep(0.1)
-            if self.listenAktif != True:
-                break
-        self.Tip_Label.setText("Konuşmak için butona tıklayın")
-        self.micButton.setStyleSheet("border-image: url('{}/image/mic_1.png');".format(self.dosyakonumu))
-        self.Tip_Label.setStyleSheet("color: rgb(255, 255, 255);")
-        self.animasyon = False
-        sys.exit()
+                window.animasyon = False
+                self.veriIsle(audio)
+                SystemExit
 
+        except sr.UnknownValueError:
+            print("Ne dediğini anlayamadım.")
+            self.micButton.setStyleSheet("border-image: url('{}/image/mic_1.png');".format(window.dosyakonumu))
+            self.Kelime_Label.setText("Anlaşılmadı")
+            window.listenAktif = False
+            self.backgroundListen = True
+            SystemExit
+
+        except sr.RequestError:
+            print("İnternet bağlanıtısı kurulamadı.")
+            self.micButton.setStyleSheet("border-image: url('{}/image/mic_1.png');".format(window.dosyakonumu))
+            window.listenAktif = False
+            self.backgroundListen = True
+            SystemExit
+
+        except sr.WaitTimeoutError:
+            print("Timeout")
+            self.Tip_Label.setText("Konuşmak için butona tıklayın")
+            self.Tip_Label.setStyleSheet("color: rgb(255, 255, 255);")
+            self.micButton.setStyleSheet("border-image: url('{}/image/mic_1.png');".format(window.dosyakonumu))
+            window.listenAktif = False
+            self.backgroundListen = True
+            SystemExit
+
+        except Exception as code:
+            print(code)
+            self.yapilanislem = ""
+            window.Yanit_Label.setText("Bir hata oluştu bunun için üzgünüm")
+            self.voiceEngine.say("Bir hata oluştu bunun için üzgünüm")
+            SystemExit
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
