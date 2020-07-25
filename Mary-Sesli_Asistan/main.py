@@ -31,7 +31,7 @@ class Ui(QtWidgets.QMainWindow):
 
     def starting(self):
         self.version = self.findChild(QtWidgets.QLabel, 'version')
-        self.version.setText("Mary 1.0.02")
+        self.version.setText("Mary 1.0.03")
         self.micButton = self.findChild(QtWidgets.QPushButton, 'micButton')
         self.Kelime_Label = self.findChild(QtWidgets.QLabel,'Kelime_Label')
         self.Yanit_Label = self.findChild(QtWidgets.QLabel,'Yanit_Label')
