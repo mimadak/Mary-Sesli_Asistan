@@ -649,7 +649,10 @@ class komutlar():
                                                 self.seslendirilecek(cevap)
                                             except AttributeError:
                                                 try:#Website metin2
-                                                    text = soup.find("div", attrs={"class": "hgKElc"}).text
+                                                    text = soup.find("span", attrs={"class": "ILfuVd"}).text
+                                                    self.solbilgi = False
+                                                    self.solbilgi2 = True
+                                                    self.googleFoto(soup)
                                                     self.seslendirilecek(text)
                                                 except AttributeError:
                                                     try:##Sağ wiki bölümü
@@ -696,18 +699,43 @@ class komutlar():
                                                             except AttributeError:
                                                                 print(12)
                                                                 g = soup.find_all("div", attrs={"class": "g"})
-                                                                self.link1 = g[0].find("a").get("href")
-                                                                self.link2 = g[1].find("a").get("href")
-                                                                self.link3 = g[2].find("a").get("href")
-                                                                self.baslik1 = g[0].find("a").find("h3").text
-                                                                self.baslik2 = g[1].find("a").find("h3").text
-                                                                self.baslik3 = g[2].find("a").find("h3").text
-                                                                self.linktext1 = g[0].find("cite").text
-                                                                self.linktext2 = g[1].find("cite").text
-                                                                self.linktext3 = g[2].find("cite").text
-                                                                self.aciklama1 = g[0].find("span", attrs={"class": "st"}).text
-                                                                self.aciklama2 = g[1].find("span", attrs={"class": "st"}).text
-                                                                self.aciklama3 = g[2].find("span", attrs={"class": "st"}).text
+                                                                for i in g:
+                                                                    print(i.text)
+                                                                try:
+                                                                    self.link1 = g[0].find("a").get("href")
+                                                                    self.linktext1 = g[0].find("cite").text
+                                                                    self.baslik1 = g[0].find("a").find("h3").text
+                                                                    self.aciklama1 = g[0].find("span", attrs={"class": "st"}).text
+                                                                except AttributeError:
+                                                                    g.pop(0)
+                                                                    self.link1 = g[0].find("a").get("href")
+                                                                    self.linktext1 = g[0].find("cite").text
+                                                                    self.baslik1 = g[0].find("a").find("h3").text
+                                                                    self.aciklama1 = g[0].find("span", attrs={"class": "st"}).text
+
+                                                                try:
+                                                                    self.link2 = g[1].find("a").get("href")
+                                                                    self.linktext2 = g[1].find("cite").text
+                                                                    self.baslik2 = g[1].find("a").find("h3").text
+                                                                    self.aciklama2 = g[1].find("span", attrs={"class": "st"}).text
+                                                                except:
+                                                                    g.pop(1)
+                                                                    self.link2 = g[1].find("a").get("href")
+                                                                    self.linktext2 = g[1].find("cite").text
+                                                                    self.baslik2 = g[1].find("a").find("h3").text
+                                                                    self.aciklama2 = g[1].find("span", attrs={"class": "st"}).text
+
+                                                                try:
+                                                                    self.link3 = g[2].find("a").get("href")
+                                                                    self.baslik3 = g[2].find("a").find("h3").text
+                                                                    self.linktext3 = g[2].find("cite").text
+                                                                    self.aciklama3 = g[2].find("span", attrs={"class": "st"}).text
+                                                                except:
+                                                                    g.pop(2)
+                                                                    self.link3 = g[2].find("a").get("href")
+                                                                    self.linktext3 = g[2].find("cite").text
+                                                                    self.baslik3 = g[2].find("a").find("h3").text
+                                                                    self.aciklama3 = g[2].find("span", attrs={"class": "st"}).text
                                                                 random = [self.listToString(self.sesBloklari) + " hakkında web'de bulduklarım.",self.listToString(self.sesBloklari) + " hakkında web'de arama yaptım."]
                                                                 random = choice(random)
                                                                 self.labelText = ""

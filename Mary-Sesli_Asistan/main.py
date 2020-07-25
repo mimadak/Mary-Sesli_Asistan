@@ -10,14 +10,12 @@ environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import webbrowser
 import sounddevice as sd
 from numpy.linalg import norm
-import playsound
 from multiprocessing import Process
 
 r = sr.Recognizer()
 
 with sr.Microphone() as source:
     r.adjust_for_ambient_noise(source)
-r.energy_threshold += 300
 
 
 
@@ -31,7 +29,7 @@ class Ui(QtWidgets.QMainWindow):
 
     def starting(self):
         self.version = self.findChild(QtWidgets.QLabel, 'version')
-        self.version.setText("Mary 1.0.02")
+        self.version.setText("Mary 1.0.03")
         self.micButton = self.findChild(QtWidgets.QPushButton, 'micButton')
         self.Kelime_Label = self.findChild(QtWidgets.QLabel,'Kelime_Label')
         self.Yanit_Label = self.findChild(QtWidgets.QLabel,'Yanit_Label')
@@ -69,7 +67,7 @@ class Ui(QtWidgets.QMainWindow):
         self.aktifThreadler = 0
         self.dosyakonumu = getcwd()
         self.soundPlayer = QtMultimedia.QMediaPlayer()
-        
+        self.soundPlayer.stateChanged.connect(self.soundPlayerState)
         #Tray icon
         self.tray_icon = QtWidgets.QSystemTrayIcon(self)
         self.tray_icon.setIcon(QtGui.QIcon("image/mary.png"))
@@ -144,6 +142,8 @@ class Ui(QtWidgets.QMainWindow):
                     pass
         except sr.UnknownValueError:
             print("Arkaplan sesi anlaşılmadı")
+        except sr.RequestError:
+            pass
 
     def ilkCalistirma(self):
         self.micButton.setMaximumSize(0, 0)
@@ -312,7 +312,8 @@ class Ui(QtWidgets.QMainWindow):
         komut.islemBul(window.yapilanislem)
         self.yapilanislem = komut.yapilanislem
         if self.listenAktif == False:
-            file_path = self.voiceEngine.get_mp3(komut.seslendirilecektext)
+            self.soundPath = self.voiceEngine.get_mp3(komut.seslendirilecektext)
+
             self.labelClear()
             if komut.yapilanislem == "neyapabilirsin":
                 self.Image_Label.show()
@@ -380,18 +381,30 @@ class Ui(QtWidgets.QMainWindow):
                 self.Image_Label.hide()
                 self.Yanit_Layout.setSpacing(6)
                 self.setYanitLabel(komut.labelText)
-            url = QtCore.QUrl.fromLocalFile(file_path)
+
+            url = QtCore.QUrl.fromLocalFile(self.soundPath)
             self.soundPlayer.setMedia(QtMultimedia.QMediaContent(url))
             self.soundPlayer.play()
-            while self.ttsIptal == False:
-                time.sleep(0.05)
+
+            while self.ttsIptal != True:
+                 time.sleep(0.05)
             self.backgroundListen = True
             self.soundPlayer.stop()
-            remove(file_path)
             SystemExit
         else:
             self.backgroundListen = True
             SystemExit
+
+    def soundPlayerState(self,state):
+        if state == QtMultimedia.QMediaPlayer.PlayingState:
+            pass
+        elif state == QtMultimedia.QMediaPlayer.StoppedState:
+            try:
+                remove(self.soundPath)
+                print("Text to speech bitti")
+                self.ttsIptal = True
+            except AttributeError as code:
+                pass
 
     def dinle(self):
         try:
