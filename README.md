@@ -4,13 +4,6 @@ Mary - Sesli Asistan, bilgisayar kullanımını kolaylaştıran ve zevkli hale g
 <h3>Versiyon 1.0.03</h3>
 
 </br>
-Güncelleme notları;
-<ul>
-  <li>Çökmeler düzeltildi</li>
-  <li>"Minimize on tray" özelliği eklendi</li>
-  <li>Arka plan dinleyicisi eklendi</li>
-  <li>Komut dosyasında iyileştirmeler yapıldı</li>
-</ul>
 
 ![alt text](https://i.hizliresim.com/XrnpjR.png)
 
