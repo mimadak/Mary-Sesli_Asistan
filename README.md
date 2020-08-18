@@ -21,6 +21,12 @@ Mary - Sesli Asistan, bilgisayar kullanımını kolaylaştıran ve zevkli hale g
   <li>İngilizce Türkçe çeviri</li>
   <li>Hava durumu</li>
 </ul>
+
+<h3>Kütüphaneleri indirmek için;</h3>
+Terminal ile projenin bulunduğu konuma geldikten sonra aşağıdaki komutu yazın.
+`pip install -r requirements.txt`
+</br>
+
 <h3>PyAudio kütüphanesini indirmek için; </h3>
 https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
 </br>
