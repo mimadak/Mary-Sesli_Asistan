@@ -28,7 +28,6 @@ Terminal ile projenin bulunduğu konuma geldikten sonra aşağıdaki komutu yaz�
 </br>
 
 pip install -r requirements.txt
-
 </br>
 
 <h3>PyAudio kütüphanesini indirmek için; </h3>
