@@ -1,0 +1,11 @@
+SpeechRecognition
+Pillow
+numpy
+sounddevice
+PyQt5
+lxml
+requests
+beautifulsoup4
+ResponsiveVoice
+playsound
+PyAudio
