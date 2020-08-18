@@ -25,7 +25,7 @@ Mary - Sesli Asistan, bilgisayar kullanımını kolaylaştıran ve zevkli hale g
 <h3>Kütüphaneleri indirmek için;</h3>
 Terminal ile projenin bulunduğu konuma geldikten sonra aşağıdaki komutu yazın.
 </br>
-```
+```py
 pip install -r requirements.txt
 ```
 </br>
